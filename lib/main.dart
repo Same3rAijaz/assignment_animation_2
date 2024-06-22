@@ -27,8 +27,8 @@ class _NamePageState extends State<NamePage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   AnimationController? _animationController;
-  Animation<double>? _opacityAnimation;
-  Animation<double>? _scaleAnimation;
+  Animation<double>? _nameOpacityAnimation;
+  Animation<Offset>? _nameSlideAnimation;
 
   @override
   void initState() {
@@ -38,17 +38,20 @@ class _NamePageState extends State<NamePage>
       vsync: this,
     );
 
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _nameOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController!,
-        curve: Curves.easeIn,
+        curve: Interval(0.0, 0.5, curve: Curves.easeIn),
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _nameSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.5),
+      end: Offset.zero,
+    ).animate(
       CurvedAnimation(
         parent: _animationController!,
-        curve: Curves.elasticOut,
+        curve: Interval(0.5, 1.0, curve: Curves.easeInOut),
       ),
     );
 
@@ -58,47 +61,19 @@ class _NamePageState extends State<NamePage>
   @override
   void dispose() {
     _animationController!.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Enter Name'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            AnimatedBuilder(
-              animation: _animationController!,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _opacityAnimation!.value,
-                  child: Transform.scale(
-                    scale: _scaleAnimation!.value,
-                    child: child,
-                  ),
-                );
-              },
-              child: TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context)
-                    .push(_createRoute(StudentIdPage(_nameController.text)));
-              },
-              child: Text('Next'),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _navigateToNextPage() {
+    if (_nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter your name')),
+      );
+    } else {
+      Navigator.of(context)
+          .push(_createRoute(StudentIdPage(_nameController.text)));
+    }
   }
 
   Route _createRoute(Widget page) {
@@ -115,9 +90,47 @@ class _NamePageState extends State<NamePage>
 
         return SlideTransition(
           position: offsetAnimation,
-          child: child,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Enter Name'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SlideTransition(
+              position: _nameSlideAnimation!,
+              child: FadeTransition(
+                opacity: _nameOpacityAnimation!,
+                child: TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _navigateToNextPage,
+              child: Text('Next'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -135,8 +148,8 @@ class _StudentIdPageState extends State<StudentIdPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _idController = TextEditingController();
   AnimationController? _animationController;
-  Animation<double>? _opacityAnimation;
-  Animation<double>? _scaleAnimation;
+  Animation<double>? _idOpacityAnimation;
+  Animation<Offset>? _idSlideAnimation;
 
   @override
   void initState() {
@@ -146,17 +159,20 @@ class _StudentIdPageState extends State<StudentIdPage>
       vsync: this,
     );
 
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _idOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController!,
-        curve: Curves.easeIn,
+        curve: Interval(0.0, 0.5, curve: Curves.easeIn),
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _idSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.5),
+      end: Offset.zero,
+    ).animate(
       CurvedAnimation(
         parent: _animationController!,
-        curve: Curves.elasticOut,
+        curve: Interval(0.5, 1.0, curve: Curves.easeInOut),
       ),
     );
 
@@ -166,48 +182,19 @@ class _StudentIdPageState extends State<StudentIdPage>
   @override
   void dispose() {
     _animationController!.dispose();
+    _idController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Enter Student ID'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text('Hello, ${widget.name}!'),
-            AnimatedBuilder(
-              animation: _animationController!,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _opacityAnimation!.value,
-                  child: Transform.scale(
-                    scale: _scaleAnimation!.value,
-                    child: child,
-                  ),
-                );
-              },
-              child: TextField(
-                controller: _idController,
-                decoration: InputDecoration(labelText: 'Student ID'),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(_createRoute(
-                    ThankYouPage(widget.name, _idController.text)));
-              },
-              child: Text('Next'),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _navigateToThankYouPage() {
+    if (_idController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter your student ID')),
+      );
+    } else {
+      Navigator.of(context)
+          .push(_createRoute(ThankYouPage(widget.name, _idController.text)));
+    }
   }
 
   Route _createRoute(Widget page) {
@@ -224,9 +211,49 @@ class _StudentIdPageState extends State<StudentIdPage>
 
         return SlideTransition(
           position: offsetAnimation,
-          child: child,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Enter Student ID'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Hello, ${widget.name}!'),
+            SizedBox(height: 20),
+            SlideTransition(
+              position: _idSlideAnimation!,
+              child: FadeTransition(
+                opacity: _idOpacityAnimation!,
+                child: TextField(
+                  controller: _idController,
+                  decoration: InputDecoration(
+                    labelText: 'Student ID',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _navigateToThankYouPage,
+              child: Text('Next'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
